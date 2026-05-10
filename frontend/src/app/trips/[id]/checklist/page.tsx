@@ -20,7 +20,8 @@ import {
   Search,
 } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
-import { mockTrips, mockChecklist, ChecklistItem } from "@/lib/mockData";
+import { mockChecklist, ChecklistItem } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
 
 const categoryIcons: Record<string, React.ElementType> = {
   Documents: FileText,
@@ -40,7 +41,8 @@ const categoryColors: Record<string, string> = {
 
 export default function ChecklistPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  const { trips } = useTrips();
+  const trip = trips.find((t) => t.id === id) || trips[0];
 
   const [items, setItems] = useState<ChecklistItem[]>(mockChecklist);
   const [newItem, setNewItem] = useState({ name: "", category: "Documents", essential: false });

@@ -23,12 +23,13 @@ import {
   Check,
 } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
-import { mockTrips } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
 import { useState } from "react";
 
 export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  const { trips } = useTrips();
+  const trip = trips.find((t) => t.id === id) || trips[0];
   const [copied, setCopied] = useState(false);
 
   const formatDate = (d: string) =>

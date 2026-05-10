@@ -27,6 +27,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { mockTrips } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
 
 const activityTypeIcons: Record<string, React.ElementType> = {
   food: Utensils,
@@ -48,7 +49,8 @@ const activityTypeColors: Record<string, string> = {
 
 export default function SharedTripPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const trip = mockTrips.find((t) => t.slug === slug) || mockTrips[0];
+  const { trips } = useTrips();
+  const trip = trips.find((t) => t.slug === slug) || trips[0];
   const [copied, setCopied] = useState(false);
   const [expandedStop, setExpandedStop] = useState<string | null>(trip.stops[0]?.id || null);
 

@@ -26,7 +26,8 @@ import {
   Music,
 } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
-import { mockTrips, CityStop, Activity } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
+import { CityStop, Activity } from "@/lib/mockData";
 
 const activityTypeIcons: Record<string, React.ElementType> = {
   food: Utensils,
@@ -55,7 +56,8 @@ const newCityOptions = [
 
 export default function ItineraryBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  const { trips } = useTrips();
+  const trip = trips.find((t) => t.id === id) || trips[0];
 
   const [stops, setStops] = useState<CityStop[]>(trip.stops);
   const [expandedStop, setExpandedStop] = useState<string | null>(stops[0]?.id || null);

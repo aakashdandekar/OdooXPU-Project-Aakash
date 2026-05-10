@@ -32,11 +32,13 @@ import {
   AreaChart,
 } from "recharts";
 import PageWrapper from "@/components/PageWrapper";
-import { mockTrips, mockBudgetBreakdown } from "@/lib/mockData";
+import { mockBudgetBreakdown } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
 
 export default function BudgetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  const { trips } = useTrips();
+  const trip = trips.find((t) => t.id === id) || trips[0];
   const budget = mockBudgetBreakdown;
   const [chartType, setChartType] = useState<"bar" | "pie" | "area">("bar");
 

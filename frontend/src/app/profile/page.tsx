@@ -21,7 +21,8 @@ import {
   Save,
 } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
-import { mockUser, mockTrips } from "@/lib/mockData";
+import { useSession } from "next-auth/react";
+import { useTrips } from "@/lib/tripsContext";
 
 const settingsSections = [
   {
@@ -42,13 +43,17 @@ const settingsSections = [
 ];
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
+  const { trips } = useTrips();
+  const user = session?.user;
+
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [profile, setProfile] = useState({
-    name: mockUser.name,
-    email: mockUser.email,
-    location: mockUser.location,
-    bio: mockUser.bio,
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    location: "San Francisco, CA",
+    bio: "Adventure seeker. Coffee lover. Collecting passport stamps.",
   });
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     "Email Notifications": true,
@@ -63,8 +68,8 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const completedTrips = mockTrips.filter((t) => t.status === "completed").length;
-  const upcomingTrips = mockTrips.filter((t) => t.status === "upcoming").length;
+  const completedTrips = trips.filter((t) => t.status === "completed").length;
+  const upcomingTrips = trips.filter((t) => t.status === "upcoming").length;
 
   return (
     <PageWrapper>
@@ -87,11 +92,17 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="px-6 pb-6">
                 <div className="relative -mt-10 mb-4">
-                  <img
-                    src={mockUser.avatar}
-                    alt={mockUser.name}
-                    className="w-20 h-20 rounded-2xl border-4 border-white object-cover shadow-md"
-                  />
+                  {user?.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name ?? ""}
+                      className="w-20 h-20 rounded-2xl border-4 border-white object-cover shadow-md"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-2xl border-4 border-white bg-orange-500 flex items-center justify-center shadow-md">
+                      <User className="w-8 h-8 text-white" />
+                    </div>
+                  )}
                   <button className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors">
                     <Camera className="w-3 h-3" />
                   </button>
@@ -105,8 +116,8 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-gray-50">
                   {[
-                    { value: mockUser.tripsCount, label: "Trips" },
-                    { value: mockUser.countriesVisited, label: "Countries" },
+                    { value: trips.length, label: "Trips" },
+                    { value: new Set(trips.flatMap((t) => t.destinations)).size, label: "Cities" },
                     { value: "4.9", label: "Rating" },
                   ].map(({ value, label }) => (
                     <div key={label} className="text-center">
@@ -117,7 +128,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-4 text-xs text-gray-400">
-                  Member since {mockUser.joinedDate}
+                  Member since January 2023
                 </div>
               </div>
             </motion.div>
@@ -133,7 +144,7 @@ export default function ProfilePage() {
                 <Heart className="w-4 h-4 text-orange-500" /> Saved Destinations
               </h3>
               <div className="flex flex-wrap gap-2">
-                {mockUser.savedDestinations.map((dest) => (
+                {["Paris", "Kyoto", "Patagonia", "Iceland"].map((dest) => (
                   <span key={dest} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-orange-600 text-sm font-medium">
                     <MapPin className="w-3 h-3" /> {dest}
                   </span>
@@ -158,7 +169,7 @@ export default function ProfilePage() {
                 {[
                   { label: "Upcoming Trips", value: upcomingTrips, color: "bg-blue-400" },
                   { label: "Completed Trips", value: completedTrips, color: "bg-green-400" },
-                  { label: "Total Trips", value: mockUser.tripsCount, color: "bg-orange-400" },
+                  { label: "Total Trips", value: trips.length, color: "bg-orange-400" },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">{label}</span>

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
+import { TripsProvider } from "@/lib/tripsContext";
 
 export const metadata: Metadata = {
   title: "Traveloop — Plan Your Perfect Trip",
-  description: "The ultimate travel planning app. Create itineraries, track budgets, manage packing lists, and share your adventures.",
+  description:
+    "The ultimate travel planning app. Create itineraries, track budgets, manage packing lists, and share your adventures.",
   keywords: "travel planning, itinerary builder, trip planner, budget tracker",
 };
 
@@ -13,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -22,7 +25,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <SessionProvider>
+          <TripsProvider>{children}</TripsProvider>
+        </SessionProvider>
+      </body>
     </html>
   );
 }
