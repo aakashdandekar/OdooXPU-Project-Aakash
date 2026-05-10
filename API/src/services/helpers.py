@@ -5,7 +5,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_core.vectorstores import Chroma
+from langchain_chroma import Chroma
 from typing import Any
 from dotenv import load_dotenv
 
@@ -13,11 +13,10 @@ load_dotenv()
 
 class Chatbot:
     def __init__(self, data: Any) -> None:
-        self.context = []
         self.data = data
 
         self.gemini = ChatGoogleGenerativeAI(
-            model="gemini2.5-flash",
+            model="gemini2.5-flash-lite",
             api_key=os.getenv("GEMINI_API_KEY")
         )
 
@@ -57,11 +56,6 @@ class Chatbot:
             context=self.data,
             argument=query
         )
-
-        context_embeddings = self.getEmbeddings(
-            context=self.context,
-            argument=query
-        )
         prompt = PromptTemplate(
             template="""
                 You are a Travel Support AI. Your objective is to assist users with itinerary management, booking resolutions, and 
@@ -87,15 +81,15 @@ class Chatbot:
 
                 INPUT:
                 Reference: {reference_embeddings}
-                Context: {context_embeddings}
+                User Query: {user_query}
             """,
-            input_variables=['reference_embeddings', 'context_embeddings']
+            input_variables=['reference_embeddings', 'user_query']
         )
 
         chain = prompt | self.gemini | StrOutputParser()
         response = chain.ainvoke({
             "reference_embeddings": ref_embeddings,
-            "context_embeddings": context_embeddings
+            "user_query": query
         })
 
         return response

@@ -37,7 +37,7 @@ def create_access_token(user_id: str) -> str:
 async def get_current_user(
     token=Depends(security),
     db: AsyncSession = Depends(get_db)
-) -> UserModel:
+) -> str:
     try:
         payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str= payload.get("user_id")

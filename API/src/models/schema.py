@@ -15,7 +15,6 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-
 # ── Preference ──────────────────────────────────────────────────────────────────────
 
 class Transport(BaseModel):
@@ -35,6 +34,14 @@ class Restaurant(BaseModel):
     id: Optional[int] = None    # fix
     user_id: str
     star: int = 0
+
+class UserProfile(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    restaurant_preference: Restaurant
+    hotel_preference: Hotels
+    transport_preference: Transport
 
 # ── Activity ──────────────────────────────────────────────────────────────────
 
@@ -65,7 +72,7 @@ class TripSchema(BaseModel):
     id: Optional[int] = None
     title: str                       # required
     description: Optional[str] = None
-    cover_photo: Optional[str] = None
+    travellers: int = 1
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     is_public: bool = False
@@ -94,10 +101,3 @@ class PackingItem(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── User ──────────────────────────────────────────────────────────────────────
-class UserModel(BaseModel):
-    id: str
-    name: str
-    email: EmailStr
-    my_trips: List[TripSchema] = []
-    my_preferences: Optional[List[Union[Transport, Hotels, Restaurant]]] = None
