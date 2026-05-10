@@ -20,7 +20,8 @@ import {
   Search,
 } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
-import { mockTrips, mockNotes, Note } from "@/lib/mockData";
+import { mockNotes, Note } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
 
 const moodConfig = {
   happy: { icon: Smile, color: "text-yellow-500 bg-yellow-50", label: "Happy" },
@@ -31,7 +32,8 @@ const moodConfig = {
 
 export default function NotesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const trip = mockTrips.find((t) => t.id === id) || mockTrips[0];
+  const { trips } = useTrips();
+  const trip = trips.find((t) => t.id === id) || trips[0];
 
   const [notes, setNotes] = useState<Note[]>(mockNotes.filter((n) => n.tripId === trip.id));
   const [editingId, setEditingId] = useState<string | null>(null);

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -16,21 +15,40 @@ import {
   ChevronRight,
   Plane,
   Sparkles,
+  User,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import PageWrapper from "@/components/PageWrapper";
 import TripCard from "@/components/TripCard";
-import { mockTrips, mockUser, recommendedDestinations, mockCities } from "@/lib/mockData";
-
-const quickStats = [
-  { label: "Total Trips", value: "12", icon: Plane, color: "bg-orange-50 text-orange-500", change: "+2 this year" },
-  { label: "Countries Visited", value: "24", icon: MapPin, color: "bg-blue-50 text-blue-500", change: "6 continents" },
-  { label: "Total Spent", value: "$18.4K", icon: DollarSign, color: "bg-green-50 text-green-500", change: "Avg $1.5K/trip" },
-  { label: "Days Traveled", value: "186", icon: Calendar, color: "bg-purple-50 text-purple-500", change: "This year" },
-];
+import { recommendedDestinations } from "@/lib/mockData";
+import { useTrips } from "@/lib/tripsContext";
 
 export default function DashboardPage() {
-  const upcomingTrips = mockTrips.filter((t) => t.status === "upcoming");
-  const recentTrips = mockTrips.slice(0, 3);
+  const { data: session } = useSession();
+  const { trips } = useTrips();
+
+  const user = session?.user;
+  const upcomingTrips = trips.filter((t) => t.status === "upcoming");
+  const recentTrips = trips.slice(0, 3);
+
+  const quickStats = [
+    { label: "Total Trips", value: String(trips.length), icon: Plane, color: "bg-orange-50 text-orange-500", change: "All time" },
+    { label: "Upcoming", value: String(upcomingTrips.length), icon: MapPin, color: "bg-blue-50 text-blue-500", change: "Planned" },
+    {
+      label: "Total Budget",
+      value: `$${(trips.reduce((s, t) => s + t.totalBudget, 0) / 1000).toFixed(1)}K`,
+      icon: DollarSign,
+      color: "bg-green-50 text-green-500",
+      change: "Across all trips",
+    },
+    {
+      label: "Destinations",
+      value: String(new Set(trips.flatMap((t) => t.destinations)).size),
+      icon: Calendar,
+      color: "bg-purple-50 text-purple-500",
+      change: "Cities planned",
+    },
+  ];
 
   return (
     <PageWrapper>
@@ -47,21 +65,34 @@ export default function DashboardPage() {
               alt="Travel"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-transparent" />
           </div>
           <div className="relative z-10 p-8 md:p-10">
             <div className="flex items-center gap-3 mb-4">
-              <img src={mockUser.avatar} alt={mockUser.name} className="w-12 h-12 rounded-full border-2 border-white/50 object-cover" />
+              {user?.image ? (
+                <img
+                  src={user.image}
+                  alt={user.name ?? ""}
+                  className="w-12 h-12 rounded-full border-2 border-white/50 object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full border-2 border-white/50 bg-orange-500 flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+              )}
               <div>
                 <p className="text-white/70 text-sm">Good morning,</p>
-                <p className="text-white font-bold text-lg">{mockUser.name} ✈️</p>
+                <p className="text-white font-bold text-lg">
+                  {user?.name ?? user?.email?.split("@")[0] ?? "Traveler"} ✈️
+                </p>
               </div>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
               Where to next?
             </h1>
             <p className="text-white/70 mb-6 max-w-md">
-              You have {upcomingTrips.length} upcoming {upcomingTrips.length === 1 ? "trip" : "trips"}. Keep the momentum going!
+              You have {upcomingTrips.length} upcoming{" "}
+              {upcomingTrips.length === 1 ? "trip" : "trips"}. Keep the momentum going!
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -109,7 +140,10 @@ export default function DashboardPage() {
             <section>
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-xl font-bold text-gray-900">My Trips</h2>
-                <Link href="/trips" className="flex items-center gap-1 text-orange-500 text-sm font-medium hover:gap-2 transition-all">
+                <Link
+                  href="/trips"
+                  className="flex items-center gap-1 text-orange-500 text-sm font-medium hover:gap-2 transition-all"
+                >
                   View all <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -124,7 +158,6 @@ export default function DashboardPage() {
                     <TripCard trip={trip} />
                   </motion.div>
                 ))}
-                {/* Create new trip card */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -136,7 +169,9 @@ export default function DashboardPage() {
                         <Plus className="w-6 h-6 text-orange-500" />
                       </div>
                       <div className="text-center">
-                        <p className="font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">Plan a New Trip</p>
+                        <p className="font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">
+                          Plan a New Trip
+                        </p>
                         <p className="text-sm text-gray-400 mt-1">Start your next adventure</p>
                       </div>
                     </div>
@@ -145,7 +180,7 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            {/* Upcoming Trip Highlight */}
+            {/* Next Adventure */}
             {upcomingTrips[0] && (
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-5">Next Adventure</h2>
@@ -160,19 +195,33 @@ export default function DashboardPage() {
                     alt={upcomingTrips[0].name}
                     className="w-full h-48 object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-5">
                     <div className="flex items-end justify-between">
                       <div>
                         <div className="flex gap-2 mb-2">
                           {upcomingTrips[0].destinations.map((d) => (
-                            <span key={d} className="text-xs text-white/80 bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">{d}</span>
+                            <span
+                              key={d}
+                              className="text-xs text-white/80 bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full"
+                            >
+                              {d}
+                            </span>
                           ))}
                         </div>
                         <h3 className="text-white font-bold text-lg">{upcomingTrips[0].name}</h3>
                         <p className="text-white/70 text-sm flex items-center gap-1 mt-1">
                           <Calendar className="w-3.5 h-3.5" />
-                          {new Date(upcomingTrips[0].startDate).toLocaleDateString("en-US", { month: "long", day: "numeric" })} — {new Date(upcomingTrips[0].endDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                          {new Date(upcomingTrips[0].startDate).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                          })}{" "}
+                          —{" "}
+                          {new Date(upcomingTrips[0].endDate).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
                       <Link
@@ -202,28 +251,37 @@ export default function DashboardPage() {
                 <TrendingUp className="w-4 h-4 text-orange-500" />
               </div>
               <div className="space-y-3">
-                {[
-                  { label: "European Summer", spent: 1200, total: 5000, color: "bg-orange-400" },
-                  { label: "Japan Cherry Blossom", spent: 4500, total: 4500, color: "bg-blue-400" },
-                  { label: "Bali Retreat", spent: 2650, total: 2800, color: "bg-green-400" },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-600 font-medium">{item.label}</span>
-                      <span className="text-gray-500">${item.spent.toLocaleString()} / ${item.total.toLocaleString()}</span>
+                {trips.slice(0, 3).map((trip, i) => {
+                  const colors = ["bg-orange-400", "bg-blue-400", "bg-green-400"];
+                  const pct = Math.min((trip.spentBudget / trip.totalBudget) * 100, 100);
+                  return (
+                    <div key={trip.id}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600 font-medium truncate max-w-[120px]">
+                          {trip.name}
+                        </span>
+                        <span className="text-gray-500 shrink-0">
+                          ${trip.spentBudget.toLocaleString()} / ${trip.totalBudget.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${colors[i % colors.length]}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${item.color}`}
-                        style={{ width: `${(item.spent / item.total) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <Link href="/trips/trip-1/budget" className="flex items-center gap-1 text-orange-500 text-sm font-medium mt-4 hover:gap-2 transition-all">
-                View full breakdown <ChevronRight className="w-4 h-4" />
-              </Link>
+              {trips[0] && (
+                <Link
+                  href={`/trips/${trips[0].id}/budget`}
+                  className="flex items-center gap-1 text-orange-500 text-sm font-medium mt-4 hover:gap-2 transition-all"
+                >
+                  View full breakdown <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
             </motion.div>
 
             {/* Recommended Destinations */}
@@ -240,20 +298,27 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {recommendedDestinations.map((dest) => (
                   <div key={dest.id} className="flex items-center gap-3 group cursor-pointer">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-                      <img src={dest.image} alt={dest.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                    <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                      <img
+                        src={dest.image}
+                        alt={dest.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 text-sm truncate">{dest.name}</p>
                       <p className="text-xs text-gray-500">{dest.country}</p>
                     </div>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 flex-shrink-0">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 shrink-0">
                       {dest.tag}
                     </span>
                   </div>
                 ))}
               </div>
-              <Link href="/discover/cities" className="flex items-center gap-1 text-orange-500 text-sm font-medium mt-4 hover:gap-2 transition-all">
+              <Link
+                href="/discover/cities"
+                className="flex items-center gap-1 text-orange-500 text-sm font-medium mt-4 hover:gap-2 transition-all"
+              >
                 Explore all <ChevronRight className="w-4 h-4" />
               </Link>
             </motion.div>
@@ -270,15 +335,27 @@ export default function DashboardPage() {
                 {[
                   { label: "New Trip", href: "/trips/new", icon: Plus, color: "bg-orange-50 text-orange-500" },
                   { label: "Discover", href: "/discover/cities", icon: Compass, color: "bg-blue-50 text-blue-500" },
-                  { label: "Checklist", href: "/trips/trip-1/checklist", icon: Star, color: "bg-green-50 text-green-500" },
-                  { label: "Notes", href: "/trips/trip-1/notes", icon: Clock, color: "bg-purple-50 text-purple-500" },
+                  {
+                    label: "Checklist",
+                    href: trips[0] ? `/trips/${trips[0].id}/checklist` : "/trips",
+                    icon: Star,
+                    color: "bg-green-50 text-green-500",
+                  },
+                  {
+                    label: "Notes",
+                    href: trips[0] ? `/trips/${trips[0].id}/notes` : "/trips",
+                    icon: Clock,
+                    color: "bg-purple-50 text-purple-500",
+                  },
                 ].map(({ label, href, icon: Icon, color }) => (
                   <Link
                     key={label}
                     href={href}
                     className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
                   >
-                    <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center group-hover:scale-110 transition-transform`}
+                    >
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-xs font-medium text-gray-600">{label}</span>
