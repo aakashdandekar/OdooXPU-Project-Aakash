@@ -25,6 +25,7 @@ class Trip(Base):
     user_id: Mapped[str] = mapped_column(String(100), ForeignKey("users.id"), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String(1000), nullable=True)
+    travellers: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
