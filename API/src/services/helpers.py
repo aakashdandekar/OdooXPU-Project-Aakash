@@ -5,7 +5,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_core.vectorstores import Chroma
+from langchain_chroma import Chroma
 from typing import Any
 from dotenv import load_dotenv
 

@@ -6,8 +6,8 @@ from src.core.auth import get_current_user
 from src.database.db import Base, engine, get_db
 from src.services.helpers import Chatbot
 from typing import Any
-from src.models.tables import User, Trip, PackingItems, Activity as ActivityModel, TripStop
-from src.models.schema import TripSchema, TripUpdateSchema, ActivitySchema as Activity, PackingItem, UserProfile
+from src.models.tables import User, Trip, PackingItems, Activity as ActivityModel
+from src.models.schema import TripSchema, TripUpdateSchema, ActivitySchema as Activity, PackingItem, UserProfile, TripStop
 import secrets
 
 
